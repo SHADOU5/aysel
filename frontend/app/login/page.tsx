@@ -1,8 +1,8 @@
-
 // app/login/page.tsx
 
 'use client';
 
+import { useState } from 'react'; // <-- Agregado para controlar el cambio de pestañas
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useRouter } from 'next/navigation';
@@ -12,6 +12,9 @@ import { useLogin } from '@/hooks/useLogin';
 export default function LoginPage() {
   const router = useRouter();
   const { login, isLoading, error } = useLogin();
+  
+  // Estado para controlar qué rol está seleccionado ('vendedor' o 'administrador')
+  const [role, setRole] = useState<'vendedor' | 'administrador'>('vendedor');
 
   const {
     register,
@@ -22,30 +25,75 @@ export default function LoginPage() {
   });
 
   async function onSubmit(data: LoginFormValues) {
-    const response = await login(data);
+    // Si necesitas enviarle el rol al backend, puedes combinarlo aquí sin alterar el esquema
+    const payload = { ...data, rol: role };
+    
+    const response = await login(payload);
     if (response) {
       router.push('/dashboard');
     }
   }
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md bg-white rounded-2xl shadow-md p-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6 text-center">
-          Iniciar sesión
-        </h1>
+    <main className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+      <div className="w-full max-w-sm bg-white rounded-2xl shadow-lg p-6 flex flex-col items-center">
+        
+        {/* LOGO REDONDO */}
+        <div className="w-24 h-24 mb-4">
+          <img 
+            src="/aysel.jpeg" 
+            alt="Logo Aysel Detalles" 
+            className="w-full h-full object-contain rounded-full"
+          />
+        </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        {/* TÍTULO Y SUBTÍTULO */}
+        <h1 className="text-2xl font-bold text-gray-800 text-center">
+          Tienda Aysel
+        </h1>
+        <p className="text-xs text-gray-500 mb-6 text-center">
+          Sistema de Facturación e Inventario
+        </p>
+
+        {/* PESTAÑAS INTERACTIVAS VENDEDOR / ADMINISTRADOR */}
+        <div className="w-full flex border-b border-gray-200 mb-6 text-sm font-semibold">
+          <button 
+            type="button" 
+            onClick={() => setRole('vendedor')}
+            className={`w-1/2 pb-2 flex flex-col items-center gap-1 transition-all ${
+              role === 'vendedor' 
+                ? 'text-blue-600 border-b-2 border-blue-600' 
+                : 'text-gray-400 opacity-70 border-b-2 border-transparent'
+            }`}
+          >
+            <span className="text-base">🏪</span>
+            VENDEDOR
+          </button>
+          
+          <button 
+            type="button" 
+            onClick={() => setRole('administrador')}
+            className={`w-1/2 pb-2 flex flex-col items-center gap-1 transition-all ${
+              role === 'administrador' 
+                ? 'text-blue-600 border-b-2 border-blue-600' 
+                : 'text-gray-400 opacity-70 border-b-2 border-transparent'
+            }`}
+          >
+            <span className="text-base">📦</span>
+            ADMINISTRADOR
+          </button>
+        </div>
+
+        {/* FORMULARIO */}
+        <form onSubmit={handleSubmit(onSubmit)} className="w-full space-y-4">
+          
           {/* Correo */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Usuario o correo  {/* ← antes decía "Correo electrónico" */}
-            </label>
             <input
-              type="Text"
+              type="text"
               {...register('correo')}
-              placeholder="usuario o correo@ejemplo.com"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Correo electrónico *"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
             />
             {errors.correo && (
               <p className="text-red-500 text-xs mt-1">{errors.correo.message}</p>
@@ -54,14 +102,11 @@ export default function LoginPage() {
 
           {/* Contraseña */}
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Contraseña
-            </label>
             <input
               type="password"
               {...register('contrasena')}
-              placeholder="••••••••"
-              className="w-full border border-gray-300 rounded-lg px-4 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              placeholder="Contraseña *"
+              className="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 placeholder-gray-400"
             />
             {errors.contrasena && (
               <p className="text-red-500 text-xs mt-1">{errors.contrasena.message}</p>
@@ -73,13 +118,13 @@ export default function LoginPage() {
             <p className="text-red-500 text-sm text-center">{error}</p>
           )}
 
-          {/* Botón */}
+          {/* Botón con Degradado */}
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white font-semibold py-2 rounded-lg transition-colors"
+            className="w-full bg-gradient-to-r from-blue-600 to-indigo-700 hover:from-blue-700 hover:to-indigo-800 disabled:opacity-50 text-white font-medium py-3 rounded-lg transition-colors text-sm uppercase tracking-wider shadow-sm mt-2"
           >
-            {isLoading ? 'Ingresando...' : 'Ingresar'}
+            {isLoading ? 'Ingresando...' : 'Iniciar Sesión'}
           </button>
         </form>
       </div>
